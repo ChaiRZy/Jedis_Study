@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!--加载配置文件-->
+    <context:property-placeholder location="classpath:*.properties"></context:property-placeholder>
+
+    <!--<bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">-->
+        <!--<property name="maxTotal" value="${redis.total}"></property>-->
+        <!--<property name="maxIdle" value="${redis.idle}"></property>-->
+        <!--<property name="maxWaitMillis" value="10000"></property>-->
+    <!--</bean>-->
+    <bean id="redisPassword" class="org.springframework.data.redis.connection.RedisPassword" factory-method="of">
+        <constructor-arg name="passwordAsString" value="${redis.pass}"></constructor-arg>
+    </bean>
+
+   <!--配置信息-->
+    <bean id="standaloneConfiguration" class="org.springframework.data.redis.connection.RedisStandaloneConfiguration">
+        <property name="port" value="${redis.port}"></property>
+        <property name="hostName" value="${redis.host}"></property>
+        <property name="password" ref="redisPassword"></property>
+        <property name="database" value="0"></property>
+    </bean>
+    <!--连接工厂-->
+    <bean id="jedisConnectionFactory" class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+        <constructor-arg name="standaloneConfig" ref="standaloneConfiguration"></constructor-arg>
+        <!--<constructor-arg name="poolConfig" ref="jedisPoolConfig"></constructor-arg>-->
+    </bean>
+    <!--模板对象-->
+    <bean id="redisTemplate" class="org.springframework.data.redis.core.StringRedisTemplate">
+        <property name="connectionFactory" ref="jedisConnectionFactory"></property>
+    </bean>
+
+    <!--基于Jedis-->
+    <bean id="jedisUtil" class="com.qfedu.redis.JedisUtil">
+        <constructor-arg name="host" value="${redis.host}"></constructor-arg>
+        <constructor-arg name="pass" value="${redis.pass}"></constructor-arg>
+        <constructor-arg name="port" value="${redis.port}"></constructor-arg>
+    </bean>
+
+   <!--基于Spring Data Redis-->
+    <bean id="redisUtil" class="com.qfedu.sdr.RedisUtil">
+        <constructor-arg name="redisTemplate" ref="redisTemplate"></constructor-arg>
+    </bean>
+</beans>
